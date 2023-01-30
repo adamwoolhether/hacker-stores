@@ -38,7 +38,7 @@ function getTitle(title) {
 // The app component returns code resembling HTML, which uses JSX (js xml) syntax.
 // JSX internally translates all HTML attributes to JS.
 // See all JSX supported HTML attributes: https://reactjs.org/docs/dom-elements.html#all-supported-html-attributes
-function App() {
+const App = () => {
     return (
         <div>
             <h1>{welcome.greeting} {getTitle(title)}</h1>
@@ -50,26 +50,26 @@ function App() {
             <List />
         </div>
     )
-}
+};
 
-function Search() {
+const Search = () => {
     return (
         <div>
             <label htmlFor="search">Search: </label>
             <input id="search" type="text" />
         </div>
     )
-}
+};
 
 // List demonstrates the use of a secondary React component
-function List() {
+const List = () => {
     return (
         <div>
             <ul>
                 {/* Note the requirement for a key in a <li>
                 which allows React to efficiently update the list if needed.
                 You can use the index if no key is given, but this should be avoided if possible.*/}
-                {list.map(function(item){
+                {list.map((item) => {
                     return (
                         <li key={item.objectID}>
                         <span>
@@ -84,6 +84,6 @@ function List() {
             </ul>
         </div>
     );
-}
+};
 
 export default App
