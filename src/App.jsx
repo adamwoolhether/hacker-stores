@@ -53,12 +53,21 @@ const App = () => {
 };
 
 const Search = () => {
+    // handleChange demonstrates an (event) handler, notice how it is passed
+    // to the `onChange` JSX attribute. Always pass functions to these handlers.
+    const handleChange = (event) => {
+        // synthetic event: a wrapper around the browser's native event.
+        console.log(event);
+        // value of target (here: input HTML element)
+        console.log(event.target.value);
+    };
+
     return (
         <div>
             <label htmlFor="search">Search: </label>
-            <input id="search" type="text" />
+            <input id="search" type="text" onChange={handleChange}/>
         </div>
-    )
+    );
 };
 
 // List demonstrates the use of a secondary React component
