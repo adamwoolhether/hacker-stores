@@ -39,11 +39,22 @@ const App = () => {
         }
     ];
 
+    // Callback Handlers allow us to pass information back up the call stack.
+    // 'A' is passed an event handler that is passed as function in propers
+    // to another component, 'B', where is executed as there as C, and ultimately
+    // calls back to the place it was introduced.
+    const handleSearch = (event) => {
+        // D
+        console.log(event.target.value);
+    };
+
     return (
         <div>
-            <h1>{welcome.greeting} {getTitle(title)}</h1>
+            {/*<h1>{welcome.greeting} {getTitle(title)}</h1>*/}
+            <h1>My Hacker Stories</h1>
 
-            <Search />
+            {/* // B */}
+            <Search onSearch={handleSearch} />
 
             <hr />
 
@@ -54,7 +65,7 @@ const App = () => {
     )
 };
 
-const Search = () => {
+const Search = (props) => {
     // While props are used to pass data down the component hierarchy,
     // React state' allows mutable data structures to be changed over time.
     // `useState` is how we define a stateful value. It returns an array with
@@ -62,6 +73,9 @@ const Search = () => {
     // is a function to update the state, AKA `state updater function`.
     // `useState` is an example of a 'React hook', one of many.
     const [searchTerm, setSearchTerm] = React.useState('');
+
+    // C
+    props.onSearch(event);
 
     // handleChange demonstrates an (event) handler, notice how it is passed
     // to the `onChange` JSX attribute. Always pass functions to these handlers.
