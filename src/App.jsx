@@ -55,19 +55,33 @@ const App = () => {
 };
 
 const Search = () => {
+    // While props are used to pass data down the component hierarchy,
+    // React state' allows mutable data structures to be changed over time.
+    // `useState` is how we define a stateful value. It returns an array with
+    // two entries: `searchTerm` represents the current state, & `setSearchTerm`
+    // is a function to update the state, AKA `state updater function`.
+    // `useState` is an example of a 'React hook', one of many.
+    const [searchTerm, setSearchTerm] = React.useState('');
+
     // handleChange demonstrates an (event) handler, notice how it is passed
     // to the `onChange` JSX attribute. Always pass functions to these handlers.
     const handleChange = (event) => {
-        // synthetic event: a wrapper around the browser's native event.
+        /*// synthetic event: a wrapper around the browser's native event.
         console.log(event);
         // value of target (here: input HTML element)
-        console.log(event.target.value);
+        console.log(event.target.value);*/
+
+        setSearchTerm(event.target.value);
     };
 
     return (
         <div>
             <label htmlFor="search">Search: </label>
             <input id="search" type="text" onChange={handleChange}/>
+
+            <p>
+                Searching for <strong>{searchTerm}</strong>.
+            </p>
         </div>
     );
 };
