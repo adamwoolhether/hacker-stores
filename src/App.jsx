@@ -7,28 +7,6 @@ const welcome = {
     title: title,
 }
 
-// Data in JS often comes as an array.
-// We use the arrays' built in map() method to do so.
-// See below `list.map` for use.
-const list = [
-    {
-        title: 'React',
-        url: 'https://reactjs.org/',
-        author: 'Jordan Walke',
-        num_comments: 3,
-        points: 4,
-        objectID: 0,
-    },
-    {
-        title: 'Redux',
-        url: 'https://redux.js.org/',
-        author: 'Dan Abramov, Andrew Clark',
-        num_comments: 2,
-        points: 5,
-        objectID: 1,
-    }
-];
-
 function getTitle(title) {
     return title
 }
@@ -39,6 +17,28 @@ function getTitle(title) {
 // JSX internally translates all HTML attributes to JS.
 // See all JSX supported HTML attributes: https://reactjs.org/docs/dom-elements.html#all-supported-html-attributes
 const App = () => {
+    // Data in JS often comes as an array.
+    // We use the arrays' built in map() method to do so.
+    // See below `list.map` for use.
+    const stories = [
+        {
+            title: 'React',
+            url: 'https://reactjs.org/',
+            author: 'Jordan Walke',
+            num_comments: 3,
+            points: 4,
+            objectID: 0,
+        },
+        {
+            title: 'Redux',
+            url: 'https://redux.js.org/',
+            author: 'Dan Abramov, Andrew Clark',
+            num_comments: 2,
+            points: 5,
+            objectID: 1,
+        }
+    ];
+
     return (
         <div>
             <h1>{welcome.greeting} {getTitle(title)}</h1>
@@ -47,7 +47,9 @@ const App = () => {
 
             <hr />
 
-            <List />
+            {/*Assigning `stories` to the HTML element `list` demonstrates
+            the use of a React Prop.*/}
+            <List list={stories}/>
         </div>
     )
 };
@@ -70,29 +72,27 @@ const Search = () => {
     );
 };
 
-// List demonstrates the use of a secondary React component
-const List = () => {
-    return (
-        <div>
-            <ul>
-                {/* Note the requirement for a key in a <li>
-                which allows React to efficiently update the list if needed.
-                You can use the index if no key is given, but this should be avoided if possible.*/}
-                {list.map((item) => {
-                    return (
-                        <li key={item.objectID}>
-                        <span>
-                            <a href={item.url}>{item.title}</a>
-                        </span>
-                            <span>{item.author}</span>
-                            <span>{item.num_comments}</span>
-                            <span>{item.points}</span>
-                        </li>
-                    );
-                })}
-            </ul>
-        </div>
-    );
-};
+// List demonstrates the use of a secondary React component.
+const List = (props) => (
+    <ul>
+        {/* Note the requirement for a key in a <li>
+        which allows React to efficiently update the list if needed.
+        You can use the index if no key is given, but this should be avoided if possible.*/}
+        {props.list.map((item) => (
+        <Item key={item.objectID} item={item} />
+            ))}
+    </ul>
+);
+
+const Item = (props) => (
+    <li>
+        <span>
+            <a href={props.item.url}>{props.item.title}</a>
+        </span>
+        <span>{props.item.author}</span>
+        <span>{props.item.num_comments}</span>
+        <span>{props.item.points}</span>
+    </li>
+)
 
 export default App
