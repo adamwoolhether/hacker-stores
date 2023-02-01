@@ -39,63 +39,57 @@ const App = () => {
         }
     ];
 
-    // Callback Handlers allow us to pass information back up the call stack.
-    // 'A' is passed an event handler that is passed as function in propers
-    // to another component, 'B', where is executed as there as C, and ultimately
-    // calls back to the place it was introduced.
-    const handleSearch = (event) => {
-        // D
-        console.log(event.target.value);
-    };
-
-    return (
-        <div>
-            {/*<h1>{welcome.greeting} {getTitle(title)}</h1>*/}
-            <h1>My Hacker Stories</h1>
-
-            {/* // B */}
-            <Search onSearch={handleSearch} />
-
-            <hr />
-
-            {/*Assigning `stories` to the HTML element `list` demonstrates
-            the use of a React Prop.*/}
-            <List list={stories}/>
-        </div>
-    )
-};
-
-const Search = (props) => {
     // While props are used to pass data down the component hierarchy,
     // React state' allows mutable data structures to be changed over time.
     // `useState` is how we define a stateful value. It returns an array with
     // two entries: `searchTerm` represents the current state, & `setSearchTerm`
     // is a function to update the state, AKA `state updater function`.
     // `useState` is an example of a 'React hook', one of many.
+    // If a component below needs to update State, pass a callback handler.
+    // If a component below needs to use state, pass it down as props.
     const [searchTerm, setSearchTerm] = React.useState('');
 
-    // C
-    props.onSearch(event);
 
-    // handleChange demonstrates an (event) handler, notice how it is passed
-    // to the `onChange` JSX attribute. Always pass functions to these handlers.
-    const handleChange = (event) => {
-        /*// synthetic event: a wrapper around the browser's native event.
-        console.log(event);
-        // value of target (here: input HTML element)
-        console.log(event.target.value);*/
-
+    // Callback Handlers allow us to pass information back up the call stack.
+    // 'A' is passed an event handler that is passed as function in props
+    // to another component, 'B', where is executed as there as 'C', and ultimately
+    // calls back to the place it was introduced.
+    const handleSearch = (event) => {
+        // Conduct event handling.
         setSearchTerm(event.target.value);
     };
 
+    // Create a new filtered array. If the search term matches the condition,
+    // it stays in the newly created array.
+    const searchedStories = stories.filter((story) =>
+         story.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    /*A more verbose way to write the same func:
+    const searchedStories = stories.filter(function (story) {
+        return story.title.includes(searchTerm)
+    });*/
+
+    return (
+        <div>
+            {/*<h1>{welcome.greeting} {getTitle(title)}</h1>*/}
+            <h1>My Hacker Stories</h1>
+
+            <Search onSearch={handleSearch} /> {/*the even is pass up from Search here.*/}
+
+            <hr />
+
+            {/*Assigning `stories` to the HTML element `list` demonstrates
+            the use of a React Prop.*/}
+            <List list={searchedStories}/>
+        </div>
+    )
+};
+
+const Search = (props) => {
     return (
         <div>
             <label htmlFor="search">Search: </label>
-            <input id="search" type="text" onChange={handleChange}/>
-
-            <p>
-                Searching for <strong>{searchTerm}</strong>.
-            </p>
+            <input id="search" type="text" onChange={props.onSearch}/> {/*pass the even up to the App component via callback*/}
         </div>
     );
 };
