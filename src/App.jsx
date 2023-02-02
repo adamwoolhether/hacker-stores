@@ -86,37 +86,41 @@ const App = () => {
     )
 };
 
-const Search = (props) => {
+const Search = ({search, onSearch}) => {
+    /*// Destructuring the prop object, allowing easy access.
+    // Another way(above) is to destructure is directly in the functions signature
+    const { search, onSearch } = props;*/
+
     return (
         <div>
             <label htmlFor="search">Search: </label>
             {/*pass the event up to the App component via callback, we also provide the state's initial value.
             This makes Search a 'controlled component'*/}
-            <input id="search" type="text" value={props.search} onChange={props.onSearch}/>
+            <input id="search" type="text" value={search} onChange={onSearch}/>
         </div>
     );
 };
 
 // List demonstrates the use of a secondary React component.
-const List = (props) => (
+const List = ({list}) => (
     <ul>
         {/* Note the requirement for a key in a <li>
         which allows React to efficiently update the list if needed.
         You can use the index if no key is given, but this should be avoided if possible.*/}
-        {props.list.map((item) => (
+        {list.map((item) => (
         <Item key={item.objectID} item={item} />
             ))}
     </ul>
 );
 
-const Item = (props) => (
+const Item = ({item}) => (
     <li>
         <span>
-            <a href={props.item.url}>{props.item.title}</a>
+            <a href={item.url}>{item.title}</a>
         </span>
-        <span>{props.item.author}</span>
-        <span>{props.item.num_comments}</span>
-        <span>{props.item.points}</span>
+        <span>{item.author}</span>
+        <span>{item.num_comments}</span>
+        <span>{item.points}</span>
     </li>
 )
 
