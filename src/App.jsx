@@ -47,7 +47,7 @@ const App = () => {
     // `useState` is an example of a 'React hook', one of many.
     // If a component below needs to update State, pass a callback handler.
     // If a component below needs to use state, pass it down as props.
-    const [searchTerm, setSearchTerm] = React.useState('');
+    const [searchTerm, setSearchTerm] = React.useState('React');
 
 
     // Callback Handlers allow us to pass information back up the call stack.
@@ -74,7 +74,8 @@ const App = () => {
             {/*<h1>{welcome.greeting} {getTitle(title)}</h1>*/}
             <h1>My Hacker Stories</h1>
 
-            <Search onSearch={handleSearch} /> {/*the even is pass up from Search here.*/}
+            {/*the event is pass up from Search here, and pass the initial state.*/}
+            <Search search={searchTerm} onSearch={handleSearch} />
 
             <hr />
 
@@ -89,7 +90,9 @@ const Search = (props) => {
     return (
         <div>
             <label htmlFor="search">Search: </label>
-            <input id="search" type="text" onChange={props.onSearch}/> {/*pass the even up to the App component via callback*/}
+            {/*pass the event up to the App component via callback, we also provide the state's initial value.
+            This makes Search a 'controlled component'*/}
+            <input id="search" type="text" value={props.search} onChange={props.onSearch}/>
         </div>
     );
 };
