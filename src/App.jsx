@@ -113,7 +113,7 @@ const List = ({list}) => (
     </ul>
 );
 
-const Item = ({item}) => (
+/*const Item = ({item}) => (
     <li>
         <span>
             <a href={item.url}>{item.title}</a>
@@ -122,6 +122,27 @@ const Item = ({item}) => (
         <span>{item.num_comments}</span>
         <span>{item.points}</span>
     </li>
+)*/
+// An example of the Item component using `nested destructuring`.
+// It helps to quickly identify all of `item`'s info, but as you
+// can see it also adds a lot of clutter and awkward indentation.
+// It may be useful/clearer in other scenarios though.
+const Item = ({
+    item: {
+        title,
+        url,
+        author,
+        num_comments,
+        points,
+    },
+}) => (
+    <li>
+        <span>
+            <a href={url}>{title}</a>
+        </span>
+        <span>{author}</span>
+        <span>{num_comments}</span>
+        <span>{points}</span>
+    </li>
 )
-
 export default App
