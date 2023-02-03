@@ -47,8 +47,20 @@ const App = () => {
     // `useState` is an example of a 'React hook', one of many.
     // If a component below needs to update State, pass a callback handler.
     // If a component below needs to use state, pass it down as props.
-    const [searchTerm, setSearchTerm] = React.useState('React');
+    // Use cached search term if it exists, or default to 'React'.
+    const [searchTerm, setSearchTerm] = React.useState(
+        localStorage.getItem('search') || 'React'
+    );
 
+    // React's useEffect Hook use to trigger side-effect.
+    // 'useEffect's first arg is a func to run our side effect
+    // and store `searchTerm in browser's local storage. Second
+    // arg is a dependency array of vars.
+React.useEffect(() => {
+    // The 'side-effect' is handled in a centralized place, not in a specific function,
+    // to keep the local storage updated.
+    localStorage.setItem('search', searchTerm);
+}, [searchTerm])
 
     // Callback Handlers allow us to pass information back up the call stack.
     // 'A' is passed an event handler that is passed as function in props
