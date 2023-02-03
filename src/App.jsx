@@ -115,15 +115,19 @@ const Search = ({search, onSearch}) => {
 // A variation of List using spread and rest operators.
 const List = ({ list }) => (
     <ul>
-        {list.map((item) => (
-            <Item
+        // rest operator destructures the `objectID` from the rest of item object.
+        {list.map(({ objectID, ...item}) => (
+            // spread operator spreads `item` with its key/value pairs
+            <Item key={item.objectID} {...item} />
+            /* // We can clean all this up with the spread operator above
+              <Item
                 key={item.objectID}
                 title={item.title}
                 url={item.url}
                 author={item.author}
                 num_comments={item.num_comments}
                 points={item.points}
-            />
+            />*/
         ))}
     </ul>
 );
