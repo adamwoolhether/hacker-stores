@@ -102,18 +102,18 @@ const Search = ({search, onSearch}) => {
 };
 
 // List demonstrates the use of a secondary React component.
-/*const List = ({list}) => (
+const List = ({list}) => (
     <ul>
-        {/!* Note the requirement for a key in a <li>
+        {/* Note the requirement for a key in a <li>
         which allows React to efficiently update the list if needed.
-        You can use the index if no key is given, but this should be avoided if possible.*!/}
+        You can use the index if no key is given, but this should be avoided if possible.*/}
         {list.map((item) => (
         <Item key={item.objectID} item={item} />
             ))}
     </ul>
-);*/
+);
 // A variation of List using spread and rest operators.
-const List = ({ list }) => (
+/*const List = ({ list }) => (
     <ul>
         // rest operator destructures the `objectID` from the rest of item object.
         {list.map(({ objectID, ...item}) => (
@@ -127,7 +127,7 @@ const List = ({ list }) => (
                 author={item.author}
                 num_comments={item.num_comments}
                 points={item.points}
-            />*/
+            />
         ))}
     </ul>
 );
@@ -144,17 +144,17 @@ const Item = ({ title, url, author, num_comments, points }) => (
         <span>{num_comments}</span>
         <span>{points}</span>
     </li>
+)*/
+const Item = ({item}) => (
+    <li>
+        <span>
+            <a href={item.url}>{item.title}</a>
+        </span>
+        <span>{item.author}</span>
+        <span>{item.num_comments}</span>
+        <span>{item.points}</span>
+    </li>
 )
-// const Item = ({item}) => (
-//     <li>
-//         <span>
-//             <a href={item.url}>{item.title}</a>
-//         </span>
-//         <span>{item.author}</span>
-//         <span>{item.num_comments}</span>
-//         <span>{item.points}</span>
-//     </li>
-// )
 /*// An example of the Item component using `nested destructuring`.
 // It helps to quickly identify all of `item`'s info, but as you
 // can see it also adds a lot of clutter and awkward indentation.
