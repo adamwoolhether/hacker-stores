@@ -7,8 +7,32 @@ const welcome = {
     title: title,
 }
 
-function getTitle(title) {
-    return title
+// useStorageState is a custom React Hook. It wraps `useState` and `useEffect`.
+// Keeping with hook naming convention, is uses 'use' in front of the name, and
+// return values are returned as an array.
+const useStorageState = (key, initialState) => {
+    // React's `useState` Hook is how we define a stateful value. It returns an array with
+    // two entries: `searchTerm` represents the current state, & `setSearchTerm`
+    // is a function to update the state, AKA `state updater function`.
+    // `useState` is an example of a 'React hook', one of many.
+    // If a component below needs to update State, pass a callback handler.
+    // If a component below needs to use state, pass it down as props.
+    // Use cached search term if it exists, or default to 'React'.
+    const [value, setValue] = React.useState(
+        localStorage.getItem(key) || initialState
+    );
+
+    // React's `useEffect` Hook is used to trigger side-effect.
+    // 'useEffect's first arg is a func to run our side effect
+    // and store `searchTerm in browser's local storage. Second
+    // arg is a dependency array of vars.
+    React.useEffect(() => {
+        // The 'side-effect' is handled in a centralized place, not in a specific function,
+        // to keep the local storage updated.
+        localStorage.setItem(key, value);
+    }, [value])
+
+    return [value, setValue]
 }
 
 // App is the main entry point for react apps, the React  `App` component.
@@ -39,28 +63,8 @@ const App = () => {
         }
     ];
 
-    // While props are used to pass data down the component hierarchy,
-    // React state' allows mutable data structures to be changed over time.
-    // `useState` is how we define a stateful value. It returns an array with
-    // two entries: `searchTerm` represents the current state, & `setSearchTerm`
-    // is a function to update the state, AKA `state updater function`.
-    // `useState` is an example of a 'React hook', one of many.
-    // If a component below needs to update State, pass a callback handler.
-    // If a component below needs to use state, pass it down as props.
-    // Use cached search term if it exists, or default to 'React'.
-    const [searchTerm, setSearchTerm] = React.useState(
-        localStorage.getItem('search') || 'React'
-    );
-
-    // React's useEffect Hook use to trigger side-effect.
-    // 'useEffect's first arg is a func to run our side effect
-    // and store `searchTerm in browser's local storage. Second
-    // arg is a dependency array of vars.
-React.useEffect(() => {
-    // The 'side-effect' is handled in a centralized place, not in a specific function,
-    // to keep the local storage updated.
-    localStorage.setItem('search', searchTerm);
-}, [searchTerm])
+    // useStorageState is a custom React hook that combines the `useState` and `useEffect` Hooks.
+    const [searchTerm, setSearchTerm] = useStorageState('search','React');
 
     // Callback Handlers allow us to pass information back up the call stack.
     // 'A' is passed an event handler that is passed as function in props
@@ -87,7 +91,18 @@ React.useEffect(() => {
             <h1>My Hacker Stories</h1>
 
             {/*the event is pass up from Search here, and pass the initial state.*/}
-            <Search search={searchTerm} onSearch={handleSearch} />
+            <InputWithLabel
+                id="search"
+                // label="Search"
+                value={searchTerm}
+                onInputChange={handleSearch}
+            >
+                {/*React Component Composition. We can remove `label="Search"` JSX element above
+                and put "Search:" between the components element tags(below), which allows us
+                to access it via React's children prop (see InputWithLabel func). Now React
+                component elements can behave similarly to native HTML.*/}
+                <strong>Search:</strong>
+            </InputWithLabel>
 
             <hr />
 
@@ -98,20 +113,24 @@ React.useEffect(() => {
     )
 };
 
-const Search = ({search, onSearch}) => {
+const InputWithLabel = ({ id, value, type = 'text', onInputChange, children }) => (
     /*// Destructuring the prop object, allowing easy access.
     // Another way(above) is to destructure is directly in the functions signature
     const { search, onSearch } = props;*/
-
-    return (
-        <div>
-            <label htmlFor="search">Search: </label>
-            {/*pass the event up to the App component via callback, we also provide the state's initial value.
-            This makes Search a 'controlled component'*/}
-            <input id="search" type="text" value={search} onChange={onSearch}/>
-        </div>
-    );
-};
+//  React Fragments allow returning siblings elements side by side without a top-level element.
+//  Can be called with `<React.Fragment>`  `</React.Fragment>` or shorthand: `<>` `</>`
+<>
+    <label htmlFor={id}>{children}</label>
+    &nbsp;
+    {/*pass the event up to the App component via callback, we also provide the state's initial value. This makes Search a 'controlled component'*/}
+    <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={onInputChange}
+    />
+</>
+);
 
 // List demonstrates the use of a secondary React component.
 const List = ({list}) => (
