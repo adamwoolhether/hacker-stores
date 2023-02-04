@@ -91,7 +91,12 @@ const App = () => {
             <h1>My Hacker Stories</h1>
 
             {/*the event is pass up from Search here, and pass the initial state.*/}
-            <Search search={searchTerm} onSearch={handleSearch} />
+            <InputWithLabel
+                id="search"
+                label="Search"
+                value={searchTerm}
+                onInputChange={handleSearch}
+            />
 
             <hr />
 
@@ -102,20 +107,21 @@ const App = () => {
     )
 };
 
-const Search = ({ search, onSearch }) => (
+const InputWithLabel = ({ id, label, value, type = 'text', onInputChange }) => (
     /*// Destructuring the prop object, allowing easy access.
     // Another way(above) is to destructure is directly in the functions signature
     const { search, onSearch } = props;*/
 //  React Fragments allow returning siblings elements side by side without a top-level element.
 //  Can be called with `<React.Fragment>`  `</React.Fragment>` or shorthand: `<>` `</>`
 <>
-    <label htmlFor="search">Search: </label>
+    <label htmlFor={id}>{label}</label>
+    &bbsp;
     {/*pass the event up to the App component via callback, we also provide the state's initial value. This makes Search a 'controlled component'*/}
     <input
-        id="search"
-        type="text"
-        value={search}
-        onChange={onSearch}
+        id={id}
+        type={type}
+        value={value}
+        onChange={onInputChange}
     />
 </>
 );
