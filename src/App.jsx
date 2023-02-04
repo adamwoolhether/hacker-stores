@@ -93,10 +93,16 @@ const App = () => {
             {/*the event is pass up from Search here, and pass the initial state.*/}
             <InputWithLabel
                 id="search"
-                label="Search"
+                // label="Search"
                 value={searchTerm}
                 onInputChange={handleSearch}
-            />
+            >
+                {/*React Component Composition. We can remove `label="Search"` JSX element above
+                and put "Search:" between the components element tags(below), which allows us
+                to access it via React's children prop (see InputWithLabel func). Now React
+                component elements can behave similarly to native HTML.*/}
+                <strong>Search:</strong>
+            </InputWithLabel>
 
             <hr />
 
@@ -107,15 +113,15 @@ const App = () => {
     )
 };
 
-const InputWithLabel = ({ id, label, value, type = 'text', onInputChange }) => (
+const InputWithLabel = ({ id, value, type = 'text', onInputChange, children }) => (
     /*// Destructuring the prop object, allowing easy access.
     // Another way(above) is to destructure is directly in the functions signature
     const { search, onSearch } = props;*/
 //  React Fragments allow returning siblings elements side by side without a top-level element.
 //  Can be called with `<React.Fragment>`  `</React.Fragment>` or shorthand: `<>` `</>`
 <>
-    <label htmlFor={id}>{label}</label>
-    &bbsp;
+    <label htmlFor={id}>{children}</label>
+    &nbsp;
     {/*pass the event up to the App component via callback, we also provide the state's initial value. This makes Search a 'controlled component'*/}
     <input
         id={id}
