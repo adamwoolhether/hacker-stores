@@ -1,12 +1,5 @@
 import * as React from 'react';
 
-const title = 'React';
-
-const welcome = {
-    greeting: "Hello",
-    title: title,
-}
-
 // useStorageState is a custom React Hook. It wraps `useState` and `useEffect`.
 // Keeping with hook naming convention, is uses 'use' in front of the name, and
 // return values are returned as an array.
@@ -57,6 +50,24 @@ const initialStories = [
     }
 ];
 
+// getAsyncStories returns a promise that returns data in its shorthand version.
+/*const getAsyncStories = () =>
+    Promise.resolve({ data: { stories: initialStories } });*/
+// Non-shorthand for reference.
+/*const getAsyncStories = () =>
+    new Promise((resolve) =>
+        resolve({ data: { stories: initialStories } })
+    );*/
+// We can simulate a remote API call by removing the shorthand version,
+// and delay the promise's resolve:
+const getAsyncStories = () =>
+    new Promise((resolve) =>
+        setTimeout(
+            () => resolve({ data: { stories: initialStories } }),
+            2000
+        )
+    );
+
 // App is the main entry point for react apps, the React  `App` component.
 // React components must be defined in PascalCase.
 // The app component returns code resembling HTML, which uses JSX (js xml) syntax.
@@ -66,8 +77,18 @@ const App = () => {
     // useStorageState is a custom React hook that combines the `useState` and `useEffect` Hooks.
     const [searchTerm, setSearchTerm] = useStorageState('search','React');
 
-    // Make our list stateful with the useState Hook, setting `initialStories` as the initial state.
-    const [stories, setStories] = React.useState(initialStories);
+    // Make our list stateful with the useState Hook, setting initial state
+    // as an empty array, so we can simulate fetching the data asynchronously.
+    const [stories, setStories] = React.useState([]);
+
+    // 'useEffect' hook to call the function and resolve the returned promise
+    // as a side effect. We give and empty deps array so the side-effect only
+    // runs once the component renders for the first time.
+    React.useEffect(() => {
+        getAsyncStories().then(result => {
+            setStories(result.data.stories);
+        });
+    }, [])
 
     // handleRemoveStory is an event handler that enables removing a story from the list.
     const handleRemoveStory = (item) => {
