@@ -35,36 +35,48 @@ const useStorageState = (key, initialState) => {
     return [value, setValue]
 }
 
+// Data in JS often comes as an array.
+// We use the arrays' built in map() method to do so.
+// See below `list.map` for use.
+const initialStories = [
+    {
+        title: 'React',
+        url: 'https://reactjs.org/',
+        author: 'Jordan Walke',
+        num_comments: 3,
+        points: 4,
+        objectID: 0,
+    },
+    {
+        title: 'Redux',
+        url: 'https://redux.js.org/',
+        author: 'Dan Abramov, Andrew Clark',
+        num_comments: 2,
+        points: 5,
+        objectID: 1,
+    }
+];
+
 // App is the main entry point for react apps, the React  `App` component.
 // React components must be defined in PascalCase.
 // The app component returns code resembling HTML, which uses JSX (js xml) syntax.
 // JSX internally translates all HTML attributes to JS.
 // See all JSX supported HTML attributes: https://reactjs.org/docs/dom-elements.html#all-supported-html-attributes
 const App = () => {
-    // Data in JS often comes as an array.
-    // We use the arrays' built in map() method to do so.
-    // See below `list.map` for use.
-    const stories = [
-        {
-            title: 'React',
-            url: 'https://reactjs.org/',
-            author: 'Jordan Walke',
-            num_comments: 3,
-            points: 4,
-            objectID: 0,
-        },
-        {
-            title: 'Redux',
-            url: 'https://redux.js.org/',
-            author: 'Dan Abramov, Andrew Clark',
-            num_comments: 2,
-            points: 5,
-            objectID: 1,
-        }
-    ];
-
     // useStorageState is a custom React hook that combines the `useState` and `useEffect` Hooks.
     const [searchTerm, setSearchTerm] = useStorageState('search','React');
+
+    // Make our list stateful with the useState Hook, setting `initialStories` as the initial state.
+    const [stories, setStories] = React.useState(initialStories);
+
+    // handleRemoveStory is an event handler that enables removing a story from the list.
+    const handleRemoveStory = (item) => {
+        const newStories = stories.filter(
+            (story) => item.objectID !== story.objectID
+        );
+
+        setStories(newStories);
+    }
 
     // Callback Handlers allow us to pass information back up the call stack.
     // 'A' is passed an event handler that is passed as function in props
@@ -96,7 +108,7 @@ const App = () => {
                 // label="Search"
                 isFocused // shorthand for `isFocused={true}`
                 value={searchTerm}
-                onInputChange={handleSearch}
+                onInputChange={handleSearch} // callback handler
             >
                 {/*React Component Composition. We can remove `label="Search"` JSX element above
                 and put "Search:" between the components element tags(below), which allows us
@@ -107,9 +119,7 @@ const App = () => {
 
             <hr />
 
-            {/*Assigning `stories` to the HTML element `list` demonstrates
-            the use of a React Prop.*/}
-            <List list={searchedStories}/>
+            <List list={searchedStories} onRemoveItem={handleRemoveStory}/>
         </div>
     )
 };
@@ -159,13 +169,17 @@ const InputWithLabel = ({ id, value, type = 'text', onInputChange, isFocused, ch
 };
 
 // List demonstrates the use of a secondary React component.
-const List = ({list}) => (
+const List = ({list, onRemoveItem}) => (
     <ul>
         {/* Note the requirement for a key in a <li>
         which allows React to efficiently update the list if needed.
         You can use the index if no key is given, but this should be avoided if possible.*/}
         {list.map((item) => (
-        <Item key={item.objectID} item={item} />
+        <Item
+            key={item.objectID}
+            item={item}
+            onRemoveItem={onRemoveItem}
+        />
             ))}
     </ul>
 );
@@ -202,16 +216,39 @@ const Item = ({ title, url, author, num_comments, points }) => (
         <span>{points}</span>
     </li>
 )*/
-const Item = ({item}) => (
-    <li>
-        <span>
-            <a href={item.url}>{item.title}</a>
-        </span>
-        <span>{item.author}</span>
-        <span>{item.num_comments}</span>
-        <span>{item.points}</span>
-    </li>
-)
+const Item = ({ item, onRemoveItem }) => {
+    // We don't use the handleRemoveItem, & instead favor the use of
+    // an 'inline handler', which allows us to execute the callback
+    // function directly in the JSX. There are two method (see below button).
+    // NOTE: Inline handlers may be more concise, but they can obscure
+    // functionality and harm readability. Our use here is ok though.
+    // const handleRemoveItem = () => {
+    //     onRemoveItem(item);
+    // };
+
+    return (
+        <li>
+            <span>
+                <a href={item.url}>{item.title}</a>
+            </span>
+            <span>{item.author}</span>
+            <span>{item.num_comments}</span>
+            <span>{item.points}</span>
+            <span>
+                {/*
+                // original way, using func above.
+                <button type="button" onClick={handleRemoveItem}>
+                // using jS 'bind' method
+                <button type="button" onClick={onRemoveItem.bind(null, item)}>
+                // The most popular method, using and inline arrow function:
+                */}
+                <button type="button" onClick={() => onRemoveItem(item)}>
+                    Dismiss
+                </button>
+            </span>
+        </li>
+    );
+};
 /*// An example of the Item component using `nested destructuring`.
 // It helps to quickly identify all of `item`'s info, but as you
 // can see it also adds a lot of clutter and awkward indentation.
