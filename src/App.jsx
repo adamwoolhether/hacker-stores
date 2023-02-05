@@ -94,6 +94,7 @@ const App = () => {
             <InputWithLabel
                 id="search"
                 // label="Search"
+                isFocused // shorthand for `isFocused={true}`
                 value={searchTerm}
                 onInputChange={handleSearch}
             >
@@ -113,24 +114,49 @@ const App = () => {
     )
 };
 
-const InputWithLabel = ({ id, value, type = 'text', onInputChange, children }) => (
+const InputWithLabel = ({ id, value, type = 'text', onInputChange, isFocused, children }) => {
     /*// Destructuring the prop object, allowing easy access.
     // Another way(above) is to destructure is directly in the functions signature
     const { search, onSearch } = props;*/
+
+    // A
+    // Create a 'ref' with 'useRef' hook. This ref is a persistent value
+    // which stays intact for the lifetime of a React component. It's `current`
+    // property is mutable, unlike the actual ref object.
+    const inputRef = React.useRef();
+
+    // C
+    // Opt into the React lifecycle with the 'useEffect' hook.
+    React.useEffect(() => {
+        if (isFocused && inputRef.current) {
+        // D
+            // The ref is passed the element's `ref` attribute, allowing the
+            // `current` property to access the element. We execute it's functionality
+            // as a side effect if `isFocused` is set and the `current` property exists.
+        inputRef.current.focus()
+    }
+}, [isFocused]);
+
+    return(
 //  React Fragments allow returning siblings elements side by side without a top-level element.
 //  Can be called with `<React.Fragment>`  `</React.Fragment>` or shorthand: `<>` `</>`
-<>
-    <label htmlFor={id}>{children}</label>
-    &nbsp;
-    {/*pass the event up to the App component via callback, we also provide the state's initial value. This makes Search a 'controlled component'*/}
-    <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={onInputChange}
-    />
-</>
-);
+        <>
+            <label htmlFor={id}>{children}</label>
+            &nbsp;
+            {/* B
+            The ref is passed to the element's JSX-reserved `ref` attribute, assigning
+            the element is assigned to the `current` property.*/}
+            <input
+                ref={inputRef}
+                id={id}
+                type={type}
+                value={value}
+                autoFocus={isFocused}
+                onChange={onInputChange}
+            />
+        </>
+    );
+};
 
 // List demonstrates the use of a secondary React component.
 const List = ({list}) => (
