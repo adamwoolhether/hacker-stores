@@ -80,15 +80,25 @@ const App = () => {
     // Make our list stateful with the useState Hook, setting initial state
     // as an empty array, so we can simulate fetching the data asynchronously.
     const [stories, setStories] = React.useState([]);
+    // implement conditional rendering for user feedback while the list retrieval is loading.
+    const [isLoading, setIsLoading] = React.useState(false);
+    // Enable handling of potential errors if occurred while fetching remote data.
+    // Actual handling is done with the promise's 'catch()' block in 'userEffect' below.
+    const [isError, setIsError] = React.useState(false);
 
     // 'useEffect' hook to call the function and resolve the returned promise
     // as a side effect. We give and empty deps array so the side-effect only
     // runs once the component renders for the first time.
     React.useEffect(() => {
+        // Enable rendering of user feedback.
+        setIsLoading(true);
+
         getAsyncStories().then(result => {
             setStories(result.data.stories);
-        });
-    }, [])
+            setIsLoading(false);
+        })
+            .catch(() => setIsError(true));
+    }, []);
 
     // handleRemoveStory is an event handler that enables removing a story from the list.
     const handleRemoveStory = (item) => {
@@ -140,9 +150,19 @@ const App = () => {
 
             <hr />
 
-            <List list={searchedStories} onRemoveItem={handleRemoveStory}/>
+            {isError && <p>Something went wrong...</p>}
+
+            {/*Using a 'ternary operator' to determine whether feedback is rendered or not.*/}
+            {isLoading ? (
+                <p>Loading...</p>
+            ) : (
+                <List
+                    list={searchedStories}
+                    onRemoveItem={handleRemoveStory}
+                />
+            )}
         </div>
-    )
+    );
 };
 
 const InputWithLabel = ({ id, value, type = 'text', onInputChange, isFocused, children }) => {
