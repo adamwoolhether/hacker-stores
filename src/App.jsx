@@ -68,6 +68,26 @@ const getAsyncStories = () =>
         )
     );
 
+// storiesReducer is a 'reducer function'. Reducer functions always take
+// a `state` and `action`. The reducer will always return a new state
+// based on these two args. We'll use this with React's 'userReducer'
+// hook in App() component. The reducer's 'action' is always associated
+// with a type and as a best practice, a payload. It returns a new state
+// if the type matches a condition in the reducer, otherwise we throw an
+// error to remind us that the implementation isn't covered.
+const storiesReducer = (state, action) => {
+    switch (action.type) {
+        case 'SET_STORIES':
+            return action.payload;
+        case 'REMOVE_STORY':
+            return state.filter(
+                (story) => action.payload.objectID !== story.objectID
+            );
+        default:
+            throw new Error();
+    }
+};
+
 // App is the main entry point for react apps, the React  `App` component.
 // React components must be defined in PascalCase.
 // The app component returns code resembling HTML, which uses JSX (js xml) syntax.
@@ -77,9 +97,15 @@ const App = () => {
     // useStorageState is a custom React hook that combines the `useState` and `useEffect` Hooks.
     const [searchTerm, setSearchTerm] = useStorageState('search','React');
 
-    // Make our list stateful with the useState Hook, setting initial state
+    /*// Make our list stateful with the useState Hook, setting initial state
     // as an empty array, so we can simulate fetching the data asynchronously.
-    const [stories, setStories] = React.useState([]);
+    const [stories, setStories] = React.useState([]);*/
+    // useReducer Hook sets state implicitly by dispatching an item for the reducer.
+    // useReducer is preferred over userState when we have multiple values that
+    // are dependent on each other or related to one domain.
+    const [stories, dispatchStories] = React.useReducer(
+        storiesReducer, []
+    );
     // implement conditional rendering for user feedback while the list retrieval is loading.
     const [isLoading, setIsLoading] = React.useState(false);
     // Enable handling of potential errors if occurred while fetching remote data.
@@ -93,21 +119,24 @@ const App = () => {
         // Enable rendering of user feedback.
         setIsLoading(true);
 
-        getAsyncStories().then(result => {
-            setStories(result.data.stories);
-            setIsLoading(false);
-        })
+        getAsyncStories()
+            .then(result => {
+                dispatchStories({
+                    type: 'SET_STORIES',
+                    payload: result.data.stories,
+                });
+                setIsLoading(false);
+            })
             .catch(() => setIsError(true));
     }, []);
 
     // handleRemoveStory is an event handler that enables removing a story from the list.
     const handleRemoveStory = (item) => {
-        const newStories = stories.filter(
-            (story) => item.objectID !== story.objectID
-        );
-
-        setStories(newStories);
-    }
+        dispatchStories({
+            type: 'REMOVE_STORY',
+            payload: item,
+        });
+    };
 
     // Callback Handlers allow us to pass information back up the call stack.
     // 'A' is passed an event handler that is passed as function in props
