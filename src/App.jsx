@@ -151,8 +151,19 @@ const App = () => {
     // array (E) changes. This causes the useEffect hook to run again (C) because
     // it depends on the new function (D), so we run the fetch again when `searchTerm`
     // changes because the useEffect depends on `handleFetchStories`.
-    const handleFetchStories = React.useCallback(() => {
+    const handleFetchStories = React.useCallback(async() => { // use async
         dispatchStories({type: 'STORIES_FETCH_INIT'});
+
+        try {
+            const result = await axios.get(url); // await the async and handle callbacks
+            dispatchStories({
+                type: 'STORIES_FETCH_SUCCESS',
+                payload: result.data.hits,
+            });
+        } catch {
+            dispatchStories({type: 'STORIES_FETCH_FAILURE'});
+        }
+    }, [url]);
 
         // React's native 'Fetch API'
         /*        fetch(url)
@@ -168,7 +179,7 @@ const App = () => {
                     );
             }, [url]); // E*/
         // Using axios
-        axios
+ /*       axios
             .get(url)
             .then((result) => {
                 dispatchStories({
@@ -179,7 +190,7 @@ const App = () => {
             .catch(() =>
                 dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
             );
-    }, [url]);
+    }, [url]);*/
 
     /*// We've taken the below hooks and merged them into the 'useReducer' hook above.
     // This helps reduce the chance bugs, giving a unified state management.
