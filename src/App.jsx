@@ -67,6 +67,13 @@ const getAsyncStories = () =>
             2000
         )
     );
+// Example of an 'impossible state' bug. We should be cautious using multiple
+// state updater functions in a row. NOTE: the bug is fixed now, as we've put
+// the multiple state hook's into a single useReducer.
+/*const getAsyncStories = () =>
+    new Promise((resolve, reject) => setTimeout(reject, 2000));*/
+
+
 
 // storiesReducer is a 'reducer function'. Reducer functions always take
 // a `state` and `action`. The reducer will always return a new state
@@ -77,12 +84,32 @@ const getAsyncStories = () =>
 // error to remind us that the implementation isn't covered.
 const storiesReducer = (state, action) => {
     switch (action.type) {
-        case 'SET_STORIES':
-            return action.payload;
+        case 'STORIES_FETCH_INIT':
+            return {
+                ...state,
+                isLoading: true,
+                isError: false,
+            };
+        case 'STORIES_FETCH_SUCCESS':
+            return {
+                ...state,
+                isLoading: false,
+                isError: false,
+                data: action.payload,
+            };
+        case 'STORIES_FETCH_FAILURE':
+            return {
+                ...state,
+                isLoading: false,
+                isError: true,
+            };
         case 'REMOVE_STORY':
-            return state.filter(
-                (story) => action.payload.objectID !== story.objectID
-            );
+            return {
+                ...state,
+                data: state.data.filter(
+                    (story) => action.payload.objectID !== story.objectID
+                ),
+            };
         default:
             throw new Error();
     }
@@ -104,30 +131,34 @@ const App = () => {
     // useReducer is preferred over userState when we have multiple values that
     // are dependent on each other or related to one domain.
     const [stories, dispatchStories] = React.useReducer(
-        storiesReducer, []
+        storiesReducer,
+        { data: [], isLoading: false, isError: false }
     );
+
+    /*// We've taken the below hooks and merged them into the 'useReducer' hook above.
+    // This helps reduce the chance bugs, giving a unified state management.
     // implement conditional rendering for user feedback while the list retrieval is loading.
     const [isLoading, setIsLoading] = React.useState(false);
     // Enable handling of potential errors if occurred while fetching remote data.
     // Actual handling is done with the promise's 'catch()' block in 'userEffect' below.
-    const [isError, setIsError] = React.useState(false);
+    const [isError, setIsError] = React.useState(false);*/
 
     // 'useEffect' hook to call the function and resolve the returned promise
     // as a side effect. We give and empty deps array so the side-effect only
     // runs once the component renders for the first time.
     React.useEffect(() => {
-        // Enable rendering of user feedback.
-        setIsLoading(true);
+        dispatchStories({ type: 'STORIES_FETCH_INIT' });
 
         getAsyncStories()
             .then(result => {
                 dispatchStories({
-                    type: 'SET_STORIES',
+                    type: 'STORIES_FETCH_SUCCESS',
                     payload: result.data.stories,
                 });
-                setIsLoading(false);
             })
-            .catch(() => setIsError(true));
+            .catch(() =>
+                dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
+            );
     }, []);
 
     // handleRemoveStory is an event handler that enables removing a story from the list.
@@ -149,7 +180,7 @@ const App = () => {
 
     // Create a new filtered array. If the search term matches the condition,
     // it stays in the newly created array.
-    const searchedStories = stories.filter((story) =>
+    const searchedStories = stories.data.filter((story) =>
          story.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
     /*A more verbose way to write the same func:
@@ -179,10 +210,10 @@ const App = () => {
 
             <hr />
 
-            {isError && <p>Something went wrong...</p>}
+            {stories.isError && <p>Something went wrong...</p>}
 
             {/*Using a 'ternary operator' to determine whether feedback is rendered or not.*/}
-            {isLoading ? (
+            {stories.isLoading ? (
                 <p>Loading...</p>
             ) : (
                 <List
