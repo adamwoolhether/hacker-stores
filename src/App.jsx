@@ -139,18 +139,13 @@ const App = () => {
         { data: [], isLoading: false, isError: false }
     );
 
-    /*// We've taken the below hooks and merged them into the 'useReducer' hook above.
-    // This helps reduce the chance bugs, giving a unified state management.
-    // implement conditional rendering for user feedback while the list retrieval is loading.
-    const [isLoading, setIsLoading] = React.useState(false);
-    // Enable handling of potential errors if occurred while fetching remote data.
-    // Actual handling is done with the promise's 'catch()' block in 'userEffect' below.
-    const [isError, setIsError] = React.useState(false);*/
+    // React's useCallback createsa memoized function every time its dependency
+    // array (E) changes. This causes the useEffect hook to run again (C) because
+    // it depends on the new function (D), so we run the fetch again when `searchTerm`
+    // changes because the useEffect depends on `handleFetchStories`.
+    const handleFetchStories = React.useCallback(() => {
+        if (!searchTerm) return;
 
-    // 'useEffect' hook to call the function and resolve the returned promise
-    // as a side effect. We give and empty deps array so the side-effect only
-    // runs once the component renders for the first time.
-    React.useEffect(() => {
         dispatchStories({ type: 'STORIES_FETCH_INIT' });
 
         // React's native 'Fetch API'
@@ -165,7 +160,23 @@ const App = () => {
             .catch(() =>
                 dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
             );
-    }, []);
+    }, [searchTerm]); // E
+
+    /*// We've taken the below hooks and merged them into the 'useReducer' hook above.
+    // This helps reduce the chance bugs, giving a unified state management.
+    // implement conditional rendering for user feedback while the list retrieval is loading.
+    const [isLoading, setIsLoading] = React.useState(false);
+    // Enable handling of potential errors if occurred while fetching remote data.
+    // Actual handling is done with the promise's 'catch()' block in 'userEffect' below.
+    const [isError, setIsError] = React.useState(false);*/
+
+    // 'useEffect' hook to call the function and resolve the returned promise
+    // as a side effect. We give and empty deps array so the side-effect only
+    // runs once the component renders for the first time.
+    React.useEffect(() => {
+        handleFetchStories(); // C
+    }, [handleFetchStories]); // D
+
 
     // handleRemoveStory is an event handler that enables removing a story from the list.
     const handleRemoveStory = (item) => {
