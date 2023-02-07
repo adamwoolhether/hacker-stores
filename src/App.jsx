@@ -1,4 +1,5 @@
 import * as React from 'react';
+import axios from 'axios';
 
 // useStorageState is a custom React Hook. It wraps `useState` and `useEffect`.
 // Keeping with hook naming convention, is uses 'use' in front of the name, and
@@ -151,21 +152,34 @@ const App = () => {
     // it depends on the new function (D), so we run the fetch again when `searchTerm`
     // changes because the useEffect depends on `handleFetchStories`.
     const handleFetchStories = React.useCallback(() => {
-        dispatchStories({ type: 'STORIES_FETCH_INIT' });
+        dispatchStories({type: 'STORIES_FETCH_INIT'});
 
         // React's native 'Fetch API'
-        fetch(url)
-            .then((response) => response.json()) // translate the response into json.
+        /*        fetch(url)
+                    .then((response) => response.json()) // translate the response into json.
+                    .then((result) => {
+                        dispatchStories({
+                            type: 'STORIES_FETCH_SUCCESS',
+                            payload: result.hits, // use the returned data structure's key 'hits'.
+                        });
+                    })
+                    .catch(() =>
+                        dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
+                    );
+            }, [url]); // E*/
+        // Using axios
+        axios
+            .get(url)
             .then((result) => {
                 dispatchStories({
                     type: 'STORIES_FETCH_SUCCESS',
-                    payload: result.hits, // use the returned data structure's key 'hits'.
+                    payload: result.data.hits,
                 });
             })
             .catch(() =>
                 dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
             );
-    }, [url]); // E
+    }, [url]);
 
     /*// We've taken the below hooks and merged them into the 'useReducer' hook above.
     // This helps reduce the chance bugs, giving a unified state management.
