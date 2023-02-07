@@ -28,7 +28,11 @@ const useStorageState = (key, initialState) => {
     return [value, setValue]
 }
 
-// Data in JS often comes as an array.
+const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
+
+// We've removed the `initialStories` object and `getAsyncStories`
+// funcs in favor of fetching real API data.
+/*// Data in JS often comes as an array.
 // We use the arrays' built in map() method to do so.
 // See below `list.map` for use.
 const initialStories = [
@@ -51,13 +55,13 @@ const initialStories = [
 ];
 
 // getAsyncStories returns a promise that returns data in its shorthand version.
-/*const getAsyncStories = () =>
-    Promise.resolve({ data: { stories: initialStories } });*/
+/!*const getAsyncStories = () =>
+    Promise.resolve({ data: { stories: initialStories } });*!/
 // Non-shorthand for reference.
-/*const getAsyncStories = () =>
+/!*const getAsyncStories = () =>
     new Promise((resolve) =>
         resolve({ data: { stories: initialStories } })
-    );*/
+    );*!/
 // We can simulate a remote API call by removing the shorthand version,
 // and delay the promise's resolve:
 const getAsyncStories = () =>
@@ -70,8 +74,8 @@ const getAsyncStories = () =>
 // Example of an 'impossible state' bug. We should be cautious using multiple
 // state updater functions in a row. NOTE: the bug is fixed now, as we've put
 // the multiple state hook's into a single useReducer.
-/*const getAsyncStories = () =>
-    new Promise((resolve, reject) => setTimeout(reject, 2000));*/
+/!*const getAsyncStories = () =>
+    new Promise((resolve, reject) => setTimeout(reject, 2000));*!/*/
 
 
 
@@ -149,11 +153,13 @@ const App = () => {
     React.useEffect(() => {
         dispatchStories({ type: 'STORIES_FETCH_INIT' });
 
-        getAsyncStories()
-            .then(result => {
+        // React's native 'Fetch API'
+        fetch(`${API_ENDPOINT}react`)
+            .then((response) => response.json()) // translate the response into json.
+            .then((result) => {
                 dispatchStories({
                     type: 'STORIES_FETCH_SUCCESS',
-                    payload: result.data.stories,
+                    payload: result.hits, // use the returned data structure's key 'hits'.
                 });
             })
             .catch(() =>
