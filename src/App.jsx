@@ -126,7 +126,14 @@ const storiesReducer = (state, action) => {
 // See all JSX supported HTML attributes: https://reactjs.org/docs/dom-elements.html#all-supported-html-attributes
 const App = () => {
     // useStorageState is a custom React hook that combines the `useState` and `useEffect` Hooks.
-    const [searchTerm, setSearchTerm] = useStorageState('search','React');
+    const [searchTerm, setSearchTerm] = useStorageState(
+        'search',
+        'React'
+    );
+
+    const [url, setUrl] = React.useState(
+        `${API_ENDPOINT}${searchTerm}`
+    );
 
     /*// Make our list stateful with the useState Hook, setting initial state
     // as an empty array, so we can simulate fetching the data asynchronously.
@@ -144,12 +151,10 @@ const App = () => {
     // it depends on the new function (D), so we run the fetch again when `searchTerm`
     // changes because the useEffect depends on `handleFetchStories`.
     const handleFetchStories = React.useCallback(() => {
-        if (!searchTerm) return;
-
         dispatchStories({ type: 'STORIES_FETCH_INIT' });
 
         // React's native 'Fetch API'
-        fetch(`${API_ENDPOINT}react`)
+        fetch(url)
             .then((response) => response.json()) // translate the response into json.
             .then((result) => {
                 dispatchStories({
@@ -160,7 +165,7 @@ const App = () => {
             .catch(() =>
                 dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
             );
-    }, [searchTerm]); // E
+    }, [url]); // E
 
     /*// We've taken the below hooks and merged them into the 'useReducer' hook above.
     // This helps reduce the chance bugs, giving a unified state management.
@@ -186,14 +191,13 @@ const App = () => {
         });
     };
 
-    // Callback Handlers allow us to pass information back up the call stack.
-    // 'A' is passed an event handler that is passed as function in props
-    // to another component, 'B', where is executed as there as 'C', and ultimately
-    // calls back to the place it was introduced.
-    const handleSearch = (event) => {
+    const handleSearchInput = (event) => {
         // Conduct event handling.
         setSearchTerm(event.target.value);
     };
+    const handleSearchSubmit = () => {
+        setUrl(`${API_ENDPOINT}${searchTerm}`);
+    }
 
     // Create a new filtered array. If the search term matches the condition,
     // it stays in the newly created array.
@@ -216,7 +220,7 @@ const App = () => {
                 // label="Search"
                 isFocused // shorthand for `isFocused={true}`
                 value={searchTerm}
-                onInputChange={handleSearch} // callback handler
+                onInputChange={handleSearchInput} // callback handler
             >
                 {/*React Component Composition. We can remove `label="Search"` JSX element above
                 and put "Search:" between the components element tags(below), which allows us
@@ -224,6 +228,14 @@ const App = () => {
                 component elements can behave similarly to native HTML.*/}
                 <strong>Search:</strong>
             </InputWithLabel>
+
+            <button
+                type="button"
+                disabled={!searchTerm}
+                onClick={handleSearchSubmit}
+            >
+                Submit
+            </button>
 
             <hr />
 
