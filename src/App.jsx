@@ -1,4 +1,5 @@
 import * as React from 'react';
+import axios from 'axios';
 
 // useStorageState is a custom React Hook. It wraps `useState` and `useEffect`.
 // Keeping with hook naming convention, is uses 'use' in front of the name, and
@@ -28,7 +29,11 @@ const useStorageState = (key, initialState) => {
     return [value, setValue]
 }
 
-// Data in JS often comes as an array.
+const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
+
+// We've removed the `initialStories` object and `getAsyncStories`
+// funcs in favor of fetching real API data.
+/*// Data in JS often comes as an array.
 // We use the arrays' built in map() method to do so.
 // See below `list.map` for use.
 const initialStories = [
@@ -51,13 +56,13 @@ const initialStories = [
 ];
 
 // getAsyncStories returns a promise that returns data in its shorthand version.
-/*const getAsyncStories = () =>
-    Promise.resolve({ data: { stories: initialStories } });*/
+/!*const getAsyncStories = () =>
+    Promise.resolve({ data: { stories: initialStories } });*!/
 // Non-shorthand for reference.
-/*const getAsyncStories = () =>
+/!*const getAsyncStories = () =>
     new Promise((resolve) =>
         resolve({ data: { stories: initialStories } })
-    );*/
+    );*!/
 // We can simulate a remote API call by removing the shorthand version,
 // and delay the promise's resolve:
 const getAsyncStories = () =>
@@ -67,6 +72,13 @@ const getAsyncStories = () =>
             2000
         )
     );
+// Example of an 'impossible state' bug. We should be cautious using multiple
+// state updater functions in a row. NOTE: the bug is fixed now, as we've put
+// the multiple state hook's into a single useReducer.
+/!*const getAsyncStories = () =>
+    new Promise((resolve, reject) => setTimeout(reject, 2000));*!/*/
+
+
 
 // storiesReducer is a 'reducer function'. Reducer functions always take
 // a `state` and `action`. The reducer will always return a new state
@@ -77,12 +89,32 @@ const getAsyncStories = () =>
 // error to remind us that the implementation isn't covered.
 const storiesReducer = (state, action) => {
     switch (action.type) {
-        case 'SET_STORIES':
-            return action.payload;
+        case 'STORIES_FETCH_INIT':
+            return {
+                ...state,
+                isLoading: true,
+                isError: false,
+            };
+        case 'STORIES_FETCH_SUCCESS':
+            return {
+                ...state,
+                isLoading: false,
+                isError: false,
+                data: action.payload,
+            };
+        case 'STORIES_FETCH_FAILURE':
+            return {
+                ...state,
+                isLoading: false,
+                isError: true,
+            };
         case 'REMOVE_STORY':
-            return state.filter(
-                (story) => action.payload.objectID !== story.objectID
-            );
+            return {
+                ...state,
+                data: state.data.filter(
+                    (story) => action.payload.objectID !== story.objectID
+                ),
+            };
         default:
             throw new Error();
     }
@@ -95,7 +127,14 @@ const storiesReducer = (state, action) => {
 // See all JSX supported HTML attributes: https://reactjs.org/docs/dom-elements.html#all-supported-html-attributes
 const App = () => {
     // useStorageState is a custom React hook that combines the `useState` and `useEffect` Hooks.
-    const [searchTerm, setSearchTerm] = useStorageState('search','React');
+    const [searchTerm, setSearchTerm] = useStorageState(
+        'search',
+        'React'
+    );
+
+    const [url, setUrl] = React.useState(
+        `${API_ENDPOINT}${searchTerm}`
+    );
 
     /*// Make our list stateful with the useState Hook, setting initial state
     // as an empty array, so we can simulate fetching the data asynchronously.
@@ -104,31 +143,70 @@ const App = () => {
     // useReducer is preferred over userState when we have multiple values that
     // are dependent on each other or related to one domain.
     const [stories, dispatchStories] = React.useReducer(
-        storiesReducer, []
+        storiesReducer,
+        { data: [], isLoading: false, isError: false }
     );
+
+    // React's useCallback createsa memoized function every time its dependency
+    // array (E) changes. This causes the useEffect hook to run again (C) because
+    // it depends on the new function (D), so we run the fetch again when `searchTerm`
+    // changes because the useEffect depends on `handleFetchStories`.
+    const handleFetchStories = React.useCallback(async() => { // use async
+        dispatchStories({type: 'STORIES_FETCH_INIT'});
+
+        try {
+            const result = await axios.get(url); // await the async and handle callbacks
+            dispatchStories({
+                type: 'STORIES_FETCH_SUCCESS',
+                payload: result.data.hits,
+            });
+        } catch {
+            dispatchStories({type: 'STORIES_FETCH_FAILURE'});
+        }
+    }, [url]);
+
+        // React's native 'Fetch API'
+        /*        fetch(url)
+                    .then((response) => response.json()) // translate the response into json.
+                    .then((result) => {
+                        dispatchStories({
+                            type: 'STORIES_FETCH_SUCCESS',
+                            payload: result.hits, // use the returned data structure's key 'hits'.
+                        });
+                    })
+                    .catch(() =>
+                        dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
+                    );
+            }, [url]); // E*/
+        // Using axios
+ /*       axios
+            .get(url)
+            .then((result) => {
+                dispatchStories({
+                    type: 'STORIES_FETCH_SUCCESS',
+                    payload: result.data.hits,
+                });
+            })
+            .catch(() =>
+                dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
+            );
+    }, [url]);*/
+
+    /*// We've taken the below hooks and merged them into the 'useReducer' hook above.
+    // This helps reduce the chance bugs, giving a unified state management.
     // implement conditional rendering for user feedback while the list retrieval is loading.
     const [isLoading, setIsLoading] = React.useState(false);
     // Enable handling of potential errors if occurred while fetching remote data.
     // Actual handling is done with the promise's 'catch()' block in 'userEffect' below.
-    const [isError, setIsError] = React.useState(false);
+    const [isError, setIsError] = React.useState(false);*/
 
     // 'useEffect' hook to call the function and resolve the returned promise
     // as a side effect. We give and empty deps array so the side-effect only
     // runs once the component renders for the first time.
     React.useEffect(() => {
-        // Enable rendering of user feedback.
-        setIsLoading(true);
+        handleFetchStories(); // C
+    }, [handleFetchStories]); // D
 
-        getAsyncStories()
-            .then(result => {
-                dispatchStories({
-                    type: 'SET_STORIES',
-                    payload: result.data.stories,
-                });
-                setIsLoading(false);
-            })
-            .catch(() => setIsError(true));
-    }, []);
 
     // handleRemoveStory is an event handler that enables removing a story from the list.
     const handleRemoveStory = (item) => {
@@ -138,18 +216,20 @@ const App = () => {
         });
     };
 
-    // Callback Handlers allow us to pass information back up the call stack.
-    // 'A' is passed an event handler that is passed as function in props
-    // to another component, 'B', where is executed as there as 'C', and ultimately
-    // calls back to the place it was introduced.
-    const handleSearch = (event) => {
+    const handleSearchInput = (event) => {
         // Conduct event handling.
         setSearchTerm(event.target.value);
     };
+    const handleSearchSubmit = () => {
+        setUrl(`${API_ENDPOINT}${searchTerm}`);
+
+        // preventDefault() and the <button> below allows us to "Enter" key.
+        event.preventDefault();
+    }
 
     // Create a new filtered array. If the search term matches the condition,
     // it stays in the newly created array.
-    const searchedStories = stories.filter((story) =>
+    const searchedStories = stories.data.filter((story) =>
          story.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
     /*A more verbose way to write the same func:
@@ -162,27 +242,18 @@ const App = () => {
             {/*<h1>{welcome.greeting} {getTitle(title)}</h1>*/}
             <h1>My Hacker Stories</h1>
 
-            {/*the event is pass up from Search here, and pass the initial state.*/}
-            <InputWithLabel
-                id="search"
-                // label="Search"
-                isFocused // shorthand for `isFocused={true}`
-                value={searchTerm}
-                onInputChange={handleSearch} // callback handler
-            >
-                {/*React Component Composition. We can remove `label="Search"` JSX element above
-                and put "Search:" between the components element tags(below), which allows us
-                to access it via React's children prop (see InputWithLabel func). Now React
-                component elements can behave similarly to native HTML.*/}
-                <strong>Search:</strong>
-            </InputWithLabel>
+            <SearchForm
+                searchTerm={searchTerm}
+                onSearchInput={handleSearchInput}
+                onSearchSubmit={handleSearchSubmit}
+            />
 
             <hr />
 
-            {isError && <p>Something went wrong...</p>}
+            {stories.isError && <p>Something went wrong...</p>}
 
             {/*Using a 'ternary operator' to determine whether feedback is rendered or not.*/}
-            {isLoading ? (
+            {stories.isLoading ? (
                 <p>Loading...</p>
             ) : (
                 <List
@@ -193,6 +264,23 @@ const App = () => {
         </div>
     );
 };
+
+const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
+    <form onSubmit={onSearchSubmit}>
+        <InputWithLabel
+            id="search"
+            value={searchTerm}
+            isFocused
+            onInputChange={onSearchInput}
+        >
+            <strong>Search:</strong>
+        </InputWithLabel>
+
+        <button type="submit" disabled={!searchTerm}>
+            Submit
+        </button>
+    </form>
+)
 
 const InputWithLabel = ({ id, value, type = 'text', onInputChange, isFocused, children }) => {
     /*// Destructuring the prop object, allowing easy access.
