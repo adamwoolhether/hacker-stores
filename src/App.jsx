@@ -222,6 +222,9 @@ const App = () => {
     };
     const handleSearchSubmit = () => {
         setUrl(`${API_ENDPOINT}${searchTerm}`);
+
+        // preventDefault() and the <button> below allows us to "Enter" key.
+        event.preventDefault();
     }
 
     // Create a new filtered array. If the search term matches the condition,
@@ -239,28 +242,11 @@ const App = () => {
             {/*<h1>{welcome.greeting} {getTitle(title)}</h1>*/}
             <h1>My Hacker Stories</h1>
 
-            {/*the event is pass up from Search here, and pass the initial state.*/}
-            <InputWithLabel
-                id="search"
-                // label="Search"
-                isFocused // shorthand for `isFocused={true}`
-                value={searchTerm}
-                onInputChange={handleSearchInput} // callback handler
-            >
-                {/*React Component Composition. We can remove `label="Search"` JSX element above
-                and put "Search:" between the components element tags(below), which allows us
-                to access it via React's children prop (see InputWithLabel func). Now React
-                component elements can behave similarly to native HTML.*/}
-                <strong>Search:</strong>
-            </InputWithLabel>
-
-            <button
-                type="button"
-                disabled={!searchTerm}
-                onClick={handleSearchSubmit}
-            >
-                Submit
-            </button>
+            <SearchForm
+                searchTerm={searchTerm}
+                onSearchInput={handleSearchInput}
+                onSearchSubmit={handleSearchSubmit}
+            />
 
             <hr />
 
@@ -278,6 +264,23 @@ const App = () => {
         </div>
     );
 };
+
+const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
+    <form onSubmit={onSearchSubmit}>
+        <InputWithLabel
+            id="search"
+            value={searchTerm}
+            isFocused
+            onInputChange={onSearchInput}
+        >
+            <strong>Search:</strong>
+        </InputWithLabel>
+
+        <button type="submit" disabled={!searchTerm}>
+            Submit
+        </button>
+    </form>
+)
 
 const InputWithLabel = ({ id, value, type = 'text', onInputChange, isFocused, children }) => {
     /*// Destructuring the prop object, allowing easy access.
