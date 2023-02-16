@@ -1,8 +1,10 @@
-.container {
+/*This filed demonstrates the CSS-in-CSS approach
+Below container and headline are commented out because we implement them with CSS-in-JS approach.*/
+/*.container {
     height: 100vw;
     padding: 20px;
 
-    background: #83a4d4; /* fallback for old browsers */
+    background: #83a4d4; !* fallback for old browsers *!
     background: linear-gradient(to left, #b6fbff, #83a4d4);
 
     color: #171212;
@@ -58,7 +60,7 @@
     display: flex;
     align-items: baseline;
 }
-
+*/
 .label {
     border-top: 1px solid #171212;
     border-left: 1px solid #171212;
