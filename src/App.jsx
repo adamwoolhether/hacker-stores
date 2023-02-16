@@ -1,6 +1,7 @@
 import * as React from 'react';
 import axios from 'axios';
 import './App.css';
+import { ReactComponent as Check } from './check.svg';
 
 // useStorageState is a custom React Hook. It wraps `useState` and `useEffect`.
 // Keeping with hook naming convention, is uses 'use' in front of the name, and
@@ -136,11 +137,13 @@ const App = () => {
                 onSearchSubmit={handleSearchSubmit}
             />
 
+           <hr />
+
             {stories.isError && <p>Something went wrong...</p>}
 
             {/*Using a 'ternary operator' to determine whether feedback is rendered or not.*/}
             {stories.isLoading ? (
-                <p>Loading...</p>
+                <p>Loading ...</p>
             ) : (
                 <List
                     list={searchedStories}
@@ -232,7 +235,7 @@ const Item = ({ item, onRemoveItem }) => (
                  onClick={() => onRemoveItem(item)}
                  className="button button_small"
                  >
-                 Dismiss
+                 <Check height="18x" width="18px" />
              </button>
         </span>
     </li>
