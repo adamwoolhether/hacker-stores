@@ -5,18 +5,36 @@ import axios from 'axios';
 // Keeping with hook naming convention, is uses 'use' in front of the name, and
 // return values are returned as an array.
 const useStorageState = (key, initialState) => {
+    const isMounted = React.useRef(false);
+
     const [value, setValue] = React.useState(
         localStorage.getItem(key) || initialState
     );
 
     React.useEffect(() => {
-        localStorage.setItem(key, value);
+        // Demonstrate to withhold a render on the initial rendering.
+        if (!isMounted.current) {
+            isMounted.current = true;
+        } else {
+            console.log('A');
+            localStorage.setItem(key, value);
+        }
     }, [value])
 
     return [value, setValue]
 }
 
 const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
+
+// getSumComments mocks an "expensive" operation.
+const getSumComments = (stories) => {
+    console.log('C');
+
+    return stories.data.reduce(
+        (result, value) => result + value.num_comments,
+        0
+    );
+};
 
 // storiesReducer is a 'reducer function'. Reducer functions always take
 // a `state` and `action`. The reducer will always return a new state
@@ -95,17 +113,18 @@ const App = () => {
 
 
     React.useEffect(() => {
+        console.log('How many times do I log?')
         handleFetchStories(); // C
     }, [handleFetchStories]); // D
 
 
     // handleRemoveStory is an event handler that enables removing a story from the list.
-    const handleRemoveStory = (item) => {
+    const handleRemoveStory = React.useCallback((item) => {
         dispatchStories({
             type: 'REMOVE_STORY',
             payload: item,
         });
-    };
+    }, []);
 
     const handleSearchInput = (event) => {
         // Conduct event handling.
@@ -124,10 +143,19 @@ const App = () => {
          story.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    console.log('B:App');
+
+    // We only run the "expensive" operation when the field is rendered in jsx below.
+    const sumComments = React.useMemo(
+        () => getSumComments(stories),
+        [stories]
+    );
+
+
     return (
         <div>
             {/*<h1>{welcome.greeting} {getTitle(title)}</h1>*/}
-            <h1>My Hacker Stories</h1>
+            <h1>My Hacker Stories with {sumComments} comments.</h1>
 
             <SearchForm
                 searchTerm={searchTerm}
@@ -196,7 +224,9 @@ const InputWithLabel = ({ id, value, type = 'text', onInputChange, isFocused, ch
 };
 
 // List demonstrates the use of a secondary React component.
-const List = ({list, onRemoveItem}) => (
+const List = ({list, onRemoveItem}) =>
+    // Demonstrate how to NOT render someone if it's not needed.
+    console.log('B:List')|| (
     <ul>
         {list.map((item) => (
         <Item
