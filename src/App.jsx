@@ -1,9 +1,7 @@
 import * as React from 'react';
 import axios from 'axios';
-// import './App.css'; // without css modules enabled
-import styles from './App.module.css';
-// allows us to use string interpolation to use two styles in one element on the SearchFrom components
-import clsx from 'clsx';
+import './App.css';
+import { ReactComponent as Check } from './check.svg';
 
 // useStorageState is a custom React Hook. It wraps `useState` and `useEffect`.
 // Keeping with hook naming convention, is uses 'use' in front of the name, and
@@ -130,11 +128,8 @@ const App = () => {
 
     return (
         // Style the attribute with css. We remove the `<hr />` because CSS handles the border.
-        // The commented out code shows how to use css without css modules enabled.
-       /*<div className="container">
-           <h1 className="headline-primary">My Hacker Stories</h1>*/
-        <div className={styles.container}>
-            <h1 className={styles.headlinePrimary}>My Hacker Stories</h1>
+       <div className="container">
+           <h1 className="headline-primary">My Hacker Stories</h1>
 
             <SearchForm
                 searchTerm={searchTerm}
@@ -142,11 +137,13 @@ const App = () => {
                 onSearchSubmit={handleSearchSubmit}
             />
 
+           <hr />
+
             {stories.isError && <p>Something went wrong...</p>}
 
             {/*Using a 'ternary operator' to determine whether feedback is rendered or not.*/}
             {stories.isLoading ? (
-                <p>Loading...</p>
+                <p>Loading ...</p>
             ) : (
                 <List
                     list={searchedStories}
@@ -158,8 +155,7 @@ const App = () => {
 };
 
 const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
-    // <form onSubmit={onSearchSubmit} className="search-form"> // without css modules
-    <form onSubmit={onSearchSubmit} className={styles.searchForm}>
+    <form onSubmit={onSearchSubmit} className="search-form">
         <InputWithLabel
             id="search"
             value={searchTerm}
@@ -172,8 +168,7 @@ const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
         <button
             type="submit"
             disabled={!searchTerm}
-            // className="button button_large"
-            className={clsx(styles.button, styles.buttonLarge)}
+            className="button button_large"
         >
             Submit
         </button>
@@ -193,8 +188,7 @@ const InputWithLabel = ({ id, value, type = 'text', onInputChange, isFocused, ch
     return(
         <>
             {/*// className can also be passed as a prop to React components.*/}
-            {/*<label htmlFor={id} className="label">*/}
-            <label htmlFor={id} className={styles.label}>
+            <label htmlFor={id} className="label">
                 {children}
             </label>
             &nbsp;
@@ -205,7 +199,7 @@ const InputWithLabel = ({ id, value, type = 'text', onInputChange, isFocused, ch
                 value={value}
                 autoFocus={isFocused}
                 onChange={onInputChange}
-                className={styles.input}
+                className="input"
             />
         </>
     );
@@ -228,8 +222,7 @@ const Item = ({ item, onRemoveItem }) => (
     // JSX can be passed as an inline JS object to attributes, demonstrated in the below `style` attributes.
     // Inline style is good for prototyping and dynamic style defs, but should be used sparingly,
     // it's better to keep a separate style definition in a CSS file.
-    // <li className="item"> // without css modules
-    <li className={styles.item}>
+    <li className="item">
         <span style={{ width: '40%' }}>
             <a href={item.url}>{item.title}</a>
         </span>
@@ -240,10 +233,9 @@ const Item = ({ item, onRemoveItem }) => (
              <button
                  type="button"
                  onClick={() => onRemoveItem(item)}
-                 // className="button button_small" // without css modules enabled
-                 className={`${styles.button} ${styles.buttonSmall}`}
+                 className="button button_small"
                  >
-                 Dismiss
+                 <Check height="18x" width="18px" />
              </button>
         </span>
     </li>
