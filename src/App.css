@@ -45,17 +45,12 @@
     color: #ffffff;
 }
 
-.button:hover > svg > g {
-    fill: #ffffff;
-    stroke: #ffffff;
-}
-
 .button_small {
     padding: 5px;
 }
 
 .button_large {
-    .padding: 10px;
+.padding: 10px;
 }
 
 .search-form {
