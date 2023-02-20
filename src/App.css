@@ -2,7 +2,8 @@
     height: 100vw;
     padding: 20px;
 
-    background: #83a4d4; /* fallback for old browsers */
+    background: #83a4d4;
+    /* fallback for old browsers */
     background: linear-gradient(to left, #b6fbff, #83a4d4);
 
     color: #171212;
@@ -24,6 +25,7 @@
     padding: 0 5px;
     white-space: nowrap;
     overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
 }
 
@@ -45,12 +47,17 @@
     color: #ffffff;
 }
 
+.button:hover > svg > g {
+    fill: #ffffff;
+    stroke: #ffffff;
+}
+
 .button_small {
     padding: 5px;
 }
 
 .button_large {
-.padding: 10px;
+    padding: 10px;
 }
 
 .search-form {
