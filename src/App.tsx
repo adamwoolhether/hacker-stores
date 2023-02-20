@@ -1,6 +1,7 @@
 import * as React from 'react';
 import axios from 'axios';
 import './App.css';
+// @ts-ignore
 import { ReactComponent as Check } from './check.svg';
 
 type Story = {
