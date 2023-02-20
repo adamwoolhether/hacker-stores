@@ -1,10 +1,50 @@
 import * as React from 'react';
 import axios from 'axios';
 
+type Story = {
+    objectID: string;
+    url: string;
+    title: string;
+    author: string;
+    num_comments: number;
+    points: number;
+}
+
+type Stories = Story[];
+
+type StoriesState = {
+    data: Stories;
+    isLoading: boolean;
+    isError: boolean;
+}
+
+type StoriesFetchInitAction = {
+    type: 'STORIES_FETCH_INIT';
+}
+type StoriesFetchSuccessAction = {
+    type: 'STORIES_FETCH_SUCCESS';
+    payload: Stories;
+}
+type StoriesFetchFailureAction = {
+    type: 'STORIES_FETCH_FAILURE';
+}
+type StoriesRemoveAction = {
+    type: 'REMOVE_STORY';
+    payload: Story;
+}
+type StoriesAction =
+    StoriesFetchInitAction |
+    StoriesFetchSuccessAction |
+    StoriesFetchFailureAction |
+    StoriesRemoveAction;
+
 // useStorageState is a custom React Hook. It wraps `useState` and `useEffect`.
 // Keeping with hook naming convention, is uses 'use' in front of the name, and
 // return values are returned as an array.
-const useStorageState = (key, initialState) => {
+const useStorageState = (
+    key: string,
+    initialState: string
+): [string, (newValue: string) => void] => {
     const [value, setValue] = React.useState(
         localStorage.getItem(key) || initialState
     );
@@ -25,7 +65,7 @@ const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
 // with a type and as a best practice, a payload. It returns a new state
 // if the type matches a condition in the reducer, otherwise we throw an
 // error to remind us that the implementation isn't covered.
-const storiesReducer = (state, action) => {
+const storiesReducer = (state: StoriesState, action: StoriesAction) => {
     switch (action.type) {
         case 'STORIES_FETCH_INIT':
             return {
@@ -100,18 +140,22 @@ const App = () => {
 
 
     // handleRemoveStory is an event handler that enables removing a story from the list.
-    const handleRemoveStory = (item) => {
+    const handleRemoveStory = (item: Story) => {
         dispatchStories({
             type: 'REMOVE_STORY',
             payload: item,
         });
     };
 
-    const handleSearchInput = (event) => {
-        // Conduct event handling.
+    const handleSearchInput = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
         setSearchTerm(event.target.value);
     };
-    const handleSearchSubmit = () => {
+
+    const handleSearchSubmit = (
+        event: React.FormEvent<HTMLFormElement>
+    ) => {
         setUrl(`${API_ENDPOINT}${searchTerm}`);
 
         // preventDefault() and the <button> below allows us to "Enter" key.
@@ -152,7 +196,17 @@ const App = () => {
     );
 };
 
-const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
+type SearchFormProps = {
+    searchTerm: string;
+    onSearchInput: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onSearchSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+}
+
+const SearchForm: React.FC<SearchFormProps> = ({
+    searchTerm,
+    onSearchInput,
+    onSearchSubmit,
+}) => (
     <form onSubmit={onSearchSubmit}>
         <InputWithLabel
             id="search"
@@ -169,8 +223,24 @@ const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
     </form>
 )
 
-const InputWithLabel = ({ id, value, type = 'text', onInputChange, isFocused, children }) => {
-    const inputRef = React.useRef();
+type InputWithLabelProps = {
+    id: string;
+    value: string;
+    type?: string;
+    onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    isFocused?: boolean;
+    children: React.ReactNode;
+}
+
+const InputWithLabel: React.FC<InputWithLabelProps> = ({
+    id,
+    value,
+    type = 'text',
+    onInputChange,
+    isFocused,
+    children
+}) => {
+    const inputRef = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {
         if (isFocused && inputRef.current) {
@@ -195,8 +265,14 @@ const InputWithLabel = ({ id, value, type = 'text', onInputChange, isFocused, ch
     );
 };
 
+type ListProps = {
+    list: Stories;
+    onRemoveItem: (item: Story) => void;
+}
+
 // List demonstrates the use of a secondary React component.
-const List = ({list, onRemoveItem}) => (
+// const List = ({list, onRemoveItem}) => (
+const List: React.FC<ListProps> = ({ list, onRemoveItem }) => (
     <ul>
         {list.map((item) => (
         <Item
@@ -208,21 +284,69 @@ const List = ({list, onRemoveItem}) => (
     </ul>
 );
 
-const Item = ({ item, onRemoveItem }) => {
-    return (
-        <li>
-            <span>
-                <a href={item.url}>{item.title}</a>
-            </span>
-            <span>{item.author}</span>
-            <span>{item.num_comments}</span>
-            <span>{item.points}</span>
-            <span>
-                <button type="button" onClick={() => onRemoveItem(item)}>
-                    Dismiss
-                </button>
-            </span>
-        </li>
-    );
-};
+type ItemProps = {
+    item: Story;
+    onRemoveItem: (item: Story) => void;
+}
+
+const Item: React.FC<ItemProps> = ({ item, onRemoveItem }) => (
+    // *** NOTE that the return item type is inferred. To be explicit:
+    // .... ({ item, onRemoveItem }): JSX.Element => ( ....
+    <li>
+        <span>
+            <a href={item.url}>{item.title}</a>
+        </span>
+        <span>{item.author}</span>
+        <span>{item.num_comments}</span>
+        <span>{item.points}</span>
+        <span>
+            <button type="button" onClick={() => onRemoveItem(item)}>
+                Dismiss
+            </button>
+        </span>
+    </li>
+);
+
+// Another way to do it with the `ItemProps` above:
+/*
+const Item = ({ item, onRemoveItem }: ItemProps) => (
+*/
+
+// A very verbose way to implement `item` with TS
+// We mitigate this by defining the `story` type on top of file.
+/*const Item = ({
+    item,
+    onRemoveItem
+}: {
+    item: {
+        objectID: string;
+        url: string;
+        title: string;
+        author: string;
+        num_comments: number;
+        points: number;
+    };
+    onRemoveItem: (item: {
+        objectID: string;
+        url: string;
+        title: string;
+        author: string;
+        num_comments: number;
+        points: number;
+    }) => void;
+}) => (
+    <li>
+        <span>
+            <a href={item.url}>{item.title}</a>
+        </span>
+        <span>{item.author}</span>
+        <span>{item.num_comments}</span>
+        <span>{item.points}</span>
+        <span>
+            <button type="button" onClick={() => onRemoveItem(item)}>
+                Dismiss
+            </button>
+        </span>
+    </li>
+);*/
 export default App
