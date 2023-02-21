@@ -8,6 +8,7 @@ dev:
 	npm install axios
 	npm install typescript @types/react @types/react-dom --save-dev
 	npm install vite-plugin-svgr --save-dev
+	npm install prettier
 
 run:
 	npm run dev
